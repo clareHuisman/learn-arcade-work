@@ -10,6 +10,7 @@ def draw_grass():
 
 
 def draw_hills():
+    """Draws hills"""
     arcade.draw_ellipse_filled(500, 150, 300, 200, arcade.csscolor.DARK_GREEN, 170)
     arcade.draw_ellipse_outline(500, 150, 300, 200, arcade.csscolor.DARK_OLIVE_GREEN, 5, 170)
     arcade.draw_ellipse_filled(750, 100, 600, 300, arcade.csscolor.DARK_GREEN)
