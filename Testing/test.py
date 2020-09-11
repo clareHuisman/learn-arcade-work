@@ -1,16 +1,37 @@
-import arcade
-# this is a comment
-# the computer will ignore it
-"""
-this is a sample drawing file
-"""
+# Chapter 10 - If statements
 
-arcade.open_window(800, 600, "My sample window")
-arcade.set_background_color(arcade.color.CORN)
-arcade.start_render()
+a = 6
+b = 8
 
-arcade.draw_lrtb_rectangle_filled(0, 799, 300, 0, arcade.csscolor.BLACK)
+if a < b:
+    print("a is less than b")
 
-arcade.finish_render()
-arcade.run()
+if a > b:
+    print("a is greater than b")
 
+if a <= b:
+    print("a is less than or equal to b")
+
+if a >= b:
+    print("a is greater than or equal to b")
+
+if a == b:
+    print("a is equal to b")
+
+if a != b:
+    print("a is not equal to b")
+
+temperature = float(input("What is the temperature in Fahrenheit?"))
+
+print("The temp is", temperature)
+
+if temperature > 90:
+    print("It is hot outside!")
+elif temperature < 30:
+    print("It is cold outside")
+else:
+    print("It is not so hot outside")
+
+
+for i in range(5):
+    print("I will not chew gum in class.")
