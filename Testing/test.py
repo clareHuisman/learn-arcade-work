@@ -1,37 +1,24 @@
-# Chapter 10 - If statements
+class Dog():
+    def __init__(self):
+        self.age = 0
+        self.name = ""
+        self.weight = 0
 
-a = 6
-b = 8
-
-if a < b:
-    print("a is less than b")
-
-if a > b:
-    print("a is greater than b")
-
-if a <= b:
-    print("a is less than or equal to b")
-
-if a >= b:
-    print("a is greater than or equal to b")
-
-if a == b:
-    print("a is equal to b")
-
-if a != b:
-    print("a is not equal to b")
-
-temperature = float(input("What is the temperature in Fahrenheit?"))
-
-print("The temp is", temperature)
-
-if temperature > 90:
-    print("It is hot outside!")
-elif temperature < 30:
-    print("It is cold outside")
-else:
-    print("It is not so hot outside")
+    def bark(self):
+        if self.weight < 10:
+            print("Yip! says", self.name)
+        else:
+            print("Woof! says", self.name)
 
 
-for i in range(5):
-    print("I will not chew gum in class.")
+def main():
+    my_dog = Dog()
+    my_dog.name = "Spot"
+    my_dog2 = Dog()
+    my_dog2.name = "Rover"
+    my_dog.bark()
+    my_dog2.bark()
+
+
+main()
+
