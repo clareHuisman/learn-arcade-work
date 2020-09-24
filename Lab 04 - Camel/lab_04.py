@@ -19,6 +19,7 @@ def main():
     print()
 
     while not done:
+        """asks for user choice"""
         print("A. Drink from your canteen.")
         print("B. Ahead moderate speed.")
         print("C. Ahead full speed.")
