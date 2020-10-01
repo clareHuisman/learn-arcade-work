@@ -1,4 +1,4 @@
-class Dog():
+class Dog:
     def __init__(self):
         self.age = 0
         self.name = ""
@@ -22,3 +22,7 @@ def main():
 
 main()
 
+x = 1
+while x < 64:
+    print(x)
+    x = x * 2
