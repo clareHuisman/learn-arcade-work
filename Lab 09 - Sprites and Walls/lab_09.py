@@ -26,22 +26,15 @@ class MyGame(arcade.Window):
         """
         super().__init__(width, height, title)
 
-        # Set the working directory (where we expect to find files) to the same
-        # directory this .py file is in. You can leave this out of your own
-        # code, but it is needed to easily run the examples using "python -m"
-        # as mentioned at the top of this program.
-        file_path = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(file_path)
-
         # Sprite lists
         self.player_list = None
+        self.wall_list = None
+        self.plant_list = None
 
         # Set up the player
         self.player_sprite = None
 
-        self.wall_list = None
-        self.plant_list = None
-
+        # Sound from kenney.nl
         self.sound = arcade.load_sound("select_004.ogg")
         self.score = 0
         self.plants_remaining = 0
@@ -79,6 +72,7 @@ class MyGame(arcade.Window):
 
         for y in range(150, 1450, 100):
             for x in range(100, 1025, 64):
+                # Randomly places plants in between walls
                 if random.randrange(18) == 0:
                     plant = arcade.Sprite("plantPurple.png", SPRITE_SCALING)
                     plant.center_x = x
@@ -98,6 +92,7 @@ class MyGame(arcade.Window):
 
         for x in range(1290, 2000, 130):
             for y in range(40, 1450, 64):
+                # Randomly places plants between walls
                 if random.randrange(14) == 0:
                     plant = arcade.Sprite("plantPurple.png", SPRITE_SCALING)
                     plant.center_x = x
@@ -178,6 +173,7 @@ class MyGame(arcade.Window):
 
         for y in range(64, 1450, 100):
             for x in range(2245, 2900, 130):
+                # Randomly places plants in between walls
                 if random.randrange(8) == 0:
                     plant = arcade.Sprite("plantPurple.png", SPRITE_SCALING)
                     plant.center_x = x
@@ -185,6 +181,7 @@ class MyGame(arcade.Window):
                     self.plant_list.append(plant)
                     self.plants_remaining += 1
 
+        # Sets up outer walls and walls between sections
         for y in range(0, 1450, 64):
             wall = arcade.Sprite("sandCenter.png", SPRITE_SCALING)
             wall.center_x = 1075
@@ -221,6 +218,7 @@ class MyGame(arcade.Window):
             wall.center_y = y
             self.wall_list.append(wall)
 
+        # Sets up signs to help player get to next section
         wall = arcade.Sprite("signRight.png", SPRITE_SCALING)
         wall.center_x = 1075
         wall.center_y = 1400
@@ -236,7 +234,6 @@ class MyGame(arcade.Window):
         arcade.set_background_color(arcade.color.SANDY_BROWN)
 
         # Set the viewport boundaries
-        # These numbers set where we have 'scrolled' to.
         self.view_left = 0
         self.view_bottom = 0
 
@@ -253,6 +250,7 @@ class MyGame(arcade.Window):
         self.player_list.draw()
         self.plant_list.draw()
 
+        # Draw the score and remaining plants to find
         output = f"Score: {self.score}"
         arcade.draw_text(output, self.view_left, self.view_bottom + 25, arcade.color.WHITE, 14)
 
@@ -287,8 +285,7 @@ class MyGame(arcade.Window):
 
         # --- Manage Scrolling ---
 
-        # Keep track of if we changed the boundary. We don't want to call the
-        # set_viewport command if we didn't change the view port.
+        # Keep track of if we changed the boundary
         changed = False
 
         # Scroll left
@@ -329,7 +326,7 @@ class MyGame(arcade.Window):
         # Checks for collisions with sprites
         plant_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.plant_list)
 
-        # If a coin was hit, removes it from the list
+        # If a plant was hit, removes it from the list
         for plant in plant_hit_list:
             plant.remove_from_sprite_lists()
             arcade.play_sound(self.sound)
