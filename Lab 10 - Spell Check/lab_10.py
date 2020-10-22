@@ -12,6 +12,7 @@ def main():
 
     dictionary_list = []
 
+    # sets up dictionary list
     for line in dictionary:
         line = line.strip()
         dictionary_list.append(line)
@@ -21,6 +22,7 @@ def main():
 
     alice = open("AliceInWonderLand200.txt")
 
+    # code for linear search
     current_line = 0
     for line in alice:
         word_list = split_line(line)
@@ -47,6 +49,7 @@ def main():
 
     alice = open("AliceInWonderLand200.txt")
 
+    # code for binary search
     current_line = 0
     for line in alice:
         word_list = split_line(line)
