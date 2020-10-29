@@ -94,6 +94,7 @@ class MyGame(arcade.Window):
         self.create_shapes_from_grid()
 
         total = 0
+        # Figures out how many blocks are selected in total
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
 
@@ -103,6 +104,7 @@ class MyGame(arcade.Window):
 
         row_total = 0
         continuous_count = 0
+        # Figures out how many blocks are selected in each row
         for row in range(ROW_COUNT):
             for column in range(COLUMN_COUNT):
                 if self.grid[row][column] == 1:
@@ -114,11 +116,12 @@ class MyGame(arcade.Window):
 
             if continuous_count > 2:
                 print("There are", continuous_count, "continuous blocks selected on row", row)
-                continuous_count = 0
             print("Row", row, "has", row_total, "cells selected.")
             row_total = 0
             continuous_count = 0
+
         column_total = 0
+        # Figures out how many blocks are selected in each column
         for column in range(COLUMN_COUNT):
             for row in range(ROW_COUNT):
                 if self.grid[row][column] == 1:
@@ -128,7 +131,6 @@ class MyGame(arcade.Window):
 
 
 def main():
-
     window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
     arcade.run()
 

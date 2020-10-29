@@ -93,6 +93,7 @@ class MyGame(arcade.Window):
             else:
                 self.grid[row][column] = 0
 
+            # Flips all blocks around the block chosen
             if row - 1 >= 0 and self.grid[row - 1][column] == 0:
                 self.grid[row - 1][column] = 1
             elif row - 1 >= 0 and self.grid[row - 1][column] == 1:
