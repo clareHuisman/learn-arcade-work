@@ -25,11 +25,11 @@ class Room:
         # background images, you can delete this part.
         self.background = None
 
-        self.lock_list = None
-        self.dragon_list = None
-        self.sword_list = None
-        self.key_list = None
-        self.trophy_list = None
+        self.lock_list = arcade.SpriteList()
+        self.dragon_list = arcade.SpriteList()
+        self.sword_list = arcade.SpriteList()
+        self.key_list = arcade.SpriteList()
+        self.trophy_list = arcade.SpriteList()
 
 
 def setup_room_1():
@@ -150,6 +150,8 @@ def setup_room_1():
     lock = arcade.Sprite("lockBlue.png", 0.2)
     lock.center_y = 210
     lock.center_x = 297
+    lock.color_match = "blue"
+    lock.open = False
     room.lock_list.append(lock)
 
     # Load the background image for this level.
@@ -199,6 +201,7 @@ def setup_room_2():
     dragon = arcade.Sprite("dragon.png", SPRITE_SCALING * 5)
     dragon.left = 200
     dragon.bottom = 200
+    dragon.dead = False
     room.dragon_list.append(dragon)
     room.background = arcade.load_texture("background.png")
 
@@ -340,6 +343,8 @@ def setup_room_3():
     object = arcade.Sprite("sword.png", .16)
     object.left = 335
     object.bottom = 95
+    object.type = "sword"
+    object.color_match = "none"
     room.object_list.append(object)
 
     return room
@@ -571,6 +576,8 @@ def setup_room_4():
     object = arcade.Sprite("keyGreen.png", .2)
     object.left = 60
     object.bottom = 195
+    object.color_match = "green"
+    object.type = "key"
     room.object_list.append(object)
 
     return room
@@ -691,6 +698,8 @@ def setup_room_5():
     lock = arcade.Sprite("lockRed.png", 0.2)
     lock.center_y = 210
     lock.center_x = 297
+    lock.color_match = "red"
+    lock.open = False
     room.lock_list.append(lock)
 
     room.background = arcade.load_texture("background.png")
@@ -774,10 +783,13 @@ def setup_room_7():
     object = arcade.Sprite("keyRed.png", .2)
     object.left = 50
     object.bottom = 50
+    object.color_match = "red"
+    object.type = "key"
     room.object_list.append(object)
     dragon = arcade.Sprite("dragon.png", SPRITE_SCALING * 5)
     dragon.left = 200
     dragon.bottom = 200
+    dragon.dead = False
     room.dragon_list.append(dragon)
     room.background = arcade.load_texture("background.png")
 
@@ -818,13 +830,16 @@ def setup_room_8():
             wall.bottom = y
             room.wall_list.append(wall)
 
-    object = arcade.Sprite("keyRed.png", .2)
+    object = arcade.Sprite("keyBlue.png", .2)
     object.left = 350
     object.bottom = 350
+    object.color_match = "blue"
+    object.type = "key"
     room.object_list.append(object)
     dragon = arcade.Sprite("dragon.png", SPRITE_SCALING * 5)
     dragon.left = 200
     dragon.bottom = 200
+    dragon.dead = False
     room.dragon_list.append(dragon)
     room.background = arcade.load_texture("background.png")
 
@@ -946,6 +961,8 @@ def setup_room_9():
     lock.center_y = 180
     lock.center_x = 297
     lock.angle = 180
+    lock.color_match = "green"
+    lock.open = False
     room.lock_list.append(lock)
     room.background = arcade.load_texture("background.png")
 
@@ -989,6 +1006,8 @@ def setup_room_10():
     object = arcade.Sprite("trophy.png", .2)
     object.left = 275
     object.bottom = 190
+    object.type = "trophy"
+    object.color_match = "none"
     room.object_list.append(object)
     room.background = arcade.load_texture("background.png")
 
@@ -1037,6 +1056,7 @@ class MyGame(arcade.Window):
         self.current_room = 0
         self.object_list = None
         self.dragon_list = None
+        self.lock_list = None
 
         # Set up the player
         self.rooms = None
@@ -1051,10 +1071,12 @@ class MyGame(arcade.Window):
         self.player_sprite = Player("player.png", 0.08)
         self.player_sprite.center_x = 100
         self.player_sprite.center_y = 100
+        self.player_sprite.dead = False
         self.player_list = arcade.SpriteList()
         self.player_list.append(self.player_sprite)
         self.object_list = arcade.SpriteList()
         self.dragon_list = arcade.SpriteList()
+        self.lock_list = arcade.SpriteList()
 
         # Our list of rooms
         self.rooms = []
@@ -1097,8 +1119,9 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.rooms[self.current_room].wall_list)
 
         dragon = Dragon("dragon.png", SPRITE_SCALING * 2)
-        dragon.center_x = 100
-        dragon.center_y = 300
+        dragon.center_x = 0
+        dragon.center_y = 400
+        dragon.dead = False
 
         self.dragon_list.append(dragon)
 
@@ -1161,137 +1184,187 @@ class MyGame(arcade.Window):
 
     def on_update(self, delta_time):
         """ Movement and game logic """
+        if not self.player_sprite.dead:
+            # Call update on all sprites
+            self.physics_engine.update()
 
-        # Call update on all sprites
-        self.physics_engine.update()
-        if self.player_sprite.carry:
-            self.player_sprite.carry.center_x = self.player_sprite.center_x + 30
-            self.player_sprite.carry.center_y = self.player_sprite.center_y
-        if self.rooms[self.current_room].object_list:
-            object_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.rooms[self.current_room].object_list)
+            if self.player_sprite.carry:
+                self.player_sprite.carry.center_x = self.player_sprite.center_x + 30
+                self.player_sprite.carry.center_y = self.player_sprite.center_y
 
-            for object in object_hit_list:
-                self.player_sprite.carry = object
-                self.rooms[self.current_room].object_list.remove(object)
+            if self.rooms[self.current_room].object_list:
+                object_hit_list = arcade.check_for_collision_with_list(self.player_sprite,
+                                                                       self.rooms[self.current_room].object_list)
+                if self.player_sprite.carry:
+                    self.rooms[self.current_room].object_list.append(self.player_sprite.carry)
 
-        for dragon in self.dragon_list:
-            dragon.follow_sprite(self.player_sprite)
-            #dragon_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.dragon_list)
+                for object in object_hit_list:
+                    self.player_sprite.carry = object
+                    self.rooms[self.current_room].object_list.remove(object)
 
-            #if dragon_hit_list:
-                #end game
+            if self.rooms[self.current_room].dragon_list:
+                for dragon in self.dragon_list:
+                    if not dragon.dead:
+                        dragon.follow_sprite(self.player_sprite)
+                        hit = arcade.check_for_collision(self.player_sprite, dragon)
+                        if hit:
+                            if not dragon.dead and self.player_sprite.carry:
+                                if self.player_sprite.carry.type != "sword":
+                                    self.player_sprite.dead = True
+                                else:
+                                    dragon.dead = True
 
-        # Do some logic here to figure out what room we are in, and if we need to go
-        # to a different room.
-        if self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 0:
-            self.current_room = 1
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = 0
-        elif self.player_sprite.center_x < 0 and self.current_room == 1:
-            self.current_room = 0
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = SCREEN_WIDTH
+                            elif not dragon.dead:
+                                self.player_sprite.dead = True
 
-        elif self.player_sprite.center_y < 0 and self.current_room == 1:
-            self.current_room = 2
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = SCREEN_HEIGHT
-        elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 2:
-            self.current_room = 1
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = 0
+            if self.player_sprite.carry:
+                object_hit_list = arcade.check_for_collision_with_list(self.player_sprite.carry,
+                                                                       self.rooms[self.current_room].lock_list)
 
-        elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 0:
-            self.current_room = 3
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = 0
-        elif self.player_sprite.center_y < 0 and self.current_room == 3:
-            self.current_room = 0
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = SCREEN_HEIGHT
+                if self.player_sprite.carry.type == "trophy" and self.current_room == 5:
+                    print("winner")
 
-        elif self.player_sprite.center_x < 0 and self.current_room == 0:
-            self.current_room = 4
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = SCREEN_WIDTH
-        elif self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 4:
-            self.current_room = 0
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = 0
+                for object in object_hit_list:
+                    if object.color_match == self.player_sprite.carry.color_match and not object.open:
+                        print(object.color_match, self.player_sprite.carry.color_match)
+                        print(object.open)
+                        self.rooms[self.current_room].wall_list[151].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[150].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[149].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[148].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[147].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[146].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[145].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[133].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[132].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[131].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[130].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[129].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[128].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[127].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[115].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[114].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[113].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[112].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[111].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[110].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[109].remove_from_sprite_lists()
+                        object.open = True
+                        self.rooms[self.current_room].lock_list[0].remove_from_sprite_lists()
+                        self.rooms[self.current_room].object_list.append(self.player_sprite.carry)
+                        self.player_sprite.carry = None
 
-        elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 4:
-            self.current_room = 7
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = 0
-        elif self.player_sprite.center_y < 0 and self.current_room == 7:
-            self.current_room = 4
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = SCREEN_HEIGHT
+            # Do some logic here to figure out what room we are in, and if we need to go
+            # to a different room.
+            if self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 0:
+                self.current_room = 1
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = 0
+            elif self.player_sprite.center_x < 0 and self.current_room == 1:
+                self.current_room = 0
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = SCREEN_WIDTH
 
-        elif self.player_sprite.center_x < 0 and self.current_room == 2:
-            self.current_room = 5
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = SCREEN_WIDTH
-        elif self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 5:
-            self.current_room = 2
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = 0
+            elif self.player_sprite.center_y < 0 and self.current_room == 1:
+                self.current_room = 2
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = SCREEN_HEIGHT
+            elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 2:
+                self.current_room = 1
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = 0
 
-        elif self.player_sprite.center_x < 0 and self.current_room == 5:
-            self.current_room = 6
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = SCREEN_WIDTH
-        elif self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 6:
-            self.current_room = 5
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_x = 0
+            elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 0:
+                self.current_room = 3
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = 0
+            elif self.player_sprite.center_y < 0 and self.current_room == 3:
+                self.current_room = 0
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = SCREEN_HEIGHT
 
-        elif self.player_sprite.center_y < 0 and self.current_room == 5:
-            self.current_room = 8
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = SCREEN_HEIGHT
-        elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 8:
-            self.current_room = 5
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = 0
+            elif self.player_sprite.center_x < 0 and self.current_room == 0:
+                self.current_room = 4
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = SCREEN_WIDTH
+            elif self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 4:
+                self.current_room = 0
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = 0
 
-        elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 5:
-            self.current_room = 0
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = 0
-        elif self.player_sprite.center_y < 0 and self.current_room == 0:
-            self.current_room = 5
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = SCREEN_HEIGHT
+            elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 4:
+                self.current_room = 7
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = 0
+            elif self.player_sprite.center_y < 0 and self.current_room == 7:
+                self.current_room = 4
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = SCREEN_HEIGHT
 
-        elif self.player_sprite.center_y < 0 and self.current_room == 8:
-            self.current_room = 9
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = SCREEN_HEIGHT
-        elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 9:
-            self.current_room = 8
-            self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
-                                                             self.rooms[self.current_room].wall_list)
-            self.player_sprite.center_y = 0
+            elif self.player_sprite.center_x < 0 and self.current_room == 2:
+                self.current_room = 5
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = SCREEN_WIDTH
+            elif self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 5:
+                self.current_room = 2
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = 0
+
+            elif self.player_sprite.center_x < 0 and self.current_room == 5:
+                self.current_room = 6
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = SCREEN_WIDTH
+            elif self.player_sprite.center_x > SCREEN_WIDTH and self.current_room == 6:
+                self.current_room = 5
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_x = 0
+
+            elif self.player_sprite.center_y < 0 and self.current_room == 5:
+                self.current_room = 8
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = SCREEN_HEIGHT
+            elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 8:
+                self.current_room = 5
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = 0
+
+            elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 5:
+                self.current_room = 0
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = 0
+            elif self.player_sprite.center_y < 0 and self.current_room == 0:
+                self.current_room = 5
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = SCREEN_HEIGHT
+
+            elif self.player_sprite.center_y < 0 and self.current_room == 8:
+                self.current_room = 9
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = SCREEN_HEIGHT
+            elif self.player_sprite.center_y > SCREEN_HEIGHT and self.current_room == 9:
+                self.current_room = 8
+                self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,
+                                                                 self.rooms[self.current_room].wall_list)
+                self.player_sprite.center_y = 0
 
 
 def main():
@@ -1303,4 +1376,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
