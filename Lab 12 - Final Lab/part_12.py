@@ -7,7 +7,7 @@ SPRITE_SIZE = int(SPRITE_NATIVE_SIZE * SPRITE_SCALING)
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
-SCREEN_TITLE = "Sprite Rooms Example"
+SCREEN_TITLE = "Atari Adventure Knockoff Edition"
 
 MOVEMENT_SPEED = 5
 
@@ -198,10 +198,11 @@ def setup_room_2():
                 room.wall_list.append(wall)
 
     # https://icon-library.com/icon/dragon-png-icon-17.html
-    dragon = arcade.Sprite("dragon.png", SPRITE_SCALING * 5)
-    dragon.left = 200
-    dragon.bottom = 200
+    dragon = Dragon("dragon.png", SPRITE_SCALING * 2)
+    dragon.center_x = 0
+    dragon.center_y = 400
     dragon.dead = False
+
     room.dragon_list.append(dragon)
     room.background = arcade.load_texture("background.png")
 
@@ -786,10 +787,12 @@ def setup_room_7():
     object.color_match = "red"
     object.type = "key"
     room.object_list.append(object)
-    dragon = arcade.Sprite("dragon.png", SPRITE_SCALING * 5)
-    dragon.left = 200
-    dragon.bottom = 200
+
+    dragon = Dragon("dragon.png", SPRITE_SCALING * 2)
+    dragon.center_x = 0
+    dragon.center_y = 400
     dragon.dead = False
+
     room.dragon_list.append(dragon)
     room.background = arcade.load_texture("background.png")
 
@@ -836,11 +839,13 @@ def setup_room_8():
     object.color_match = "blue"
     object.type = "key"
     room.object_list.append(object)
-    dragon = arcade.Sprite("dragon.png", SPRITE_SCALING * 5)
-    dragon.left = 200
-    dragon.bottom = 200
+
+    dragon = Dragon("dragon.png", SPRITE_SCALING * 2)
+    dragon.center_x = 0
+    dragon.center_y = 400
     dragon.dead = False
     room.dragon_list.append(dragon)
+
     room.background = arcade.load_texture("background.png")
 
     return room
@@ -924,16 +929,6 @@ def setup_room_9():
     for x in range(92, 505, SPRITE_SIZE * 2):
         wall = arcade.Sprite("brickGrey.png", 0.2)
         wall.center_x = x
-        wall.center_y = 130
-        room.wall_list.append(wall)
-    for x in range(92, 250, SPRITE_SIZE * 2):
-        wall = arcade.Sprite("brickGrey.png", 0.2)
-        wall.center_x = x
-        wall.center_y = 155
-        room.wall_list.append(wall)
-    for x in range(357, 505, SPRITE_SIZE * 2):
-        wall = arcade.Sprite("brickGrey.png", 0.2)
-        wall.center_x = x
         wall.center_y = 155
         room.wall_list.append(wall)
     for x in range(92, 250, SPRITE_SIZE * 2):
@@ -955,10 +950,20 @@ def setup_room_9():
         wall = arcade.Sprite("brickGrey.png", 0.2)
         wall.center_x = x
         wall.center_y = 205
+        room.wall_list.append(wall)
+    for x in range(92, 250, SPRITE_SIZE * 2):
+        wall = arcade.Sprite("brickGrey.png", 0.2)
+        wall.center_x = x
+        wall.center_y = 230
+        room.wall_list.append(wall)
+    for x in range(357, 505, SPRITE_SIZE * 2):
+        wall = arcade.Sprite("brickGrey.png", 0.2)
+        wall.center_x = x
+        wall.center_y = 230
         room.wall_list.append(wall)
 
     lock = arcade.Sprite("lockGreen.png", .2)
-    lock.center_y = 180
+    lock.center_y = 205
     lock.center_x = 297
     lock.angle = 180
     lock.color_match = "green"
@@ -1036,14 +1041,69 @@ class Dragon(arcade.Sprite):
             self.center_x -= min(MOVEMENT_SPEED - 3, self.center_x - player_sprite.center_x)
 
 
-class MyGame(arcade.Window):
+class InstructionView(arcade.View):
+    def on_show(self):
+        """ This is run once when we switch to this view """
+        arcade.set_background_color(arcade.csscolor.DARK_SLATE_BLUE)
+
+        # Reset the viewport, necessary if we have a scrolling game and we need
+        # to reset the viewport back to the start so we can see what we draw.
+        arcade.set_viewport(0, SCREEN_WIDTH - 1, 0, SCREEN_HEIGHT - 1)
+
+    def on_draw(self):
+        """ Draw this view """
+        arcade.start_render()
+        arcade.draw_text("Instructions:", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 90,
+                         arcade.color.WHITE, font_size=20, anchor_x="center")
+        arcade.draw_text(" Find the hidden chalice that \n has been stolen from the kingdom,\n "
+                         "but beware that danger lurks!", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
+                         arcade.color.WHITE, font_size=20, anchor_x="center")
+        arcade.draw_text("Click to advance", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 75,
+                         arcade.color.WHITE, font_size=20, anchor_x="center")
+
+    def on_mouse_press(self, _x, _y, _button, _modifiers):
+        """ If the user presses the mouse button, start the game. """
+        game_view = MyGame()
+        game_view.setup()
+        self.window.show_view(game_view)
+
+
+class GameOverView(arcade.View):
+    """ View to show when game is over """
+
+    def __init__(self):
+        """ This is run once when we switch to this view """
+        super().__init__()
+        # http://pngimg.com/download/83375
+        self.texture = arcade.load_texture("game_over_PNG57.png")
+
+        # Reset the viewport, necessary if we have a scrolling game and we need
+        # to reset the viewport back to the start so we can see what we draw.
+        arcade.set_viewport(0, SCREEN_WIDTH - 1, 0, SCREEN_HEIGHT - 1)
+
+    def on_draw(self):
+        """ Draw this view """
+        arcade.start_render()
+        self.texture.draw_sized(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
+                                SCREEN_WIDTH, SCREEN_HEIGHT)
+        arcade.draw_text("Click anywhere to restart!", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150,
+                         arcade.color.WHITE, font_size=20, anchor_x="center")
+
+    def on_mouse_press(self, _x, _y, _button, _modifiers):
+        """ If the user presses the mouse button, re-start the game. """
+        game_view = MyGame()
+        game_view.setup()
+        self.window.show_view(game_view)
+
+
+class MyGame(arcade.View):
     """ Main application class. """
 
-    def __init__(self, width, height, title):
+    def __init__(self):
         """
         Initializer
         """
-        super().__init__(width, height, title)
+        super().__init__()
 
         # Set the working directory (where we expect to find files) to the same
         # directory this .py file is in. You can leave this out of your own
@@ -1064,6 +1124,12 @@ class MyGame(arcade.Window):
         self.player_list = None
         self.physics_engine = None
 
+        # Track the current state of what key is pressed
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+
     def setup(self):
         """ Set up the game and initialize the variables. """
         # Set up the player
@@ -1072,6 +1138,7 @@ class MyGame(arcade.Window):
         self.player_sprite.center_x = 100
         self.player_sprite.center_y = 100
         self.player_sprite.dead = False
+        self.player_sprite.winner = False
         self.player_list = arcade.SpriteList()
         self.player_list.append(self.player_sprite)
         self.object_list = arcade.SpriteList()
@@ -1118,13 +1185,6 @@ class MyGame(arcade.Window):
         # Create a physics engine for this room
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.rooms[self.current_room].wall_list)
 
-        dragon = Dragon("dragon.png", SPRITE_SCALING * 2)
-        dragon.center_x = 0
-        dragon.center_y = 400
-        dragon.dead = False
-
-        self.dragon_list.append(dragon)
-
     def on_draw(self):
         """
         Render the screen.
@@ -1145,7 +1205,7 @@ class MyGame(arcade.Window):
             self.rooms[self.current_room].lock_list.draw()
 
         if self.rooms[self.current_room].dragon_list:
-            self.dragon_list.draw()
+            self.rooms[self.current_room].dragon_list.draw()
 
         if self.rooms[self.current_room].object_list:
             self.rooms[self.current_room].object_list.draw()
@@ -1158,17 +1218,22 @@ class MyGame(arcade.Window):
         if self.player_sprite.carry:
             self.player_sprite.carry.draw()
 
+        if self.player_sprite.winner:
+            self.rooms[9].wall_list.draw()
+            arcade.draw_text("CONGRATULATIONS!!", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 100,
+                             arcade.color.WHITE, font_size=30, anchor_x="center")
+
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed. """
 
         if key == arcade.key.UP:
-            self.player_sprite.change_y = MOVEMENT_SPEED
+            self.up_pressed = True
         elif key == arcade.key.DOWN:
-            self.player_sprite.change_y = -MOVEMENT_SPEED
+            self.down_pressed = True
         elif key == arcade.key.LEFT:
-            self.player_sprite.change_x = -MOVEMENT_SPEED
+            self.left_pressed = True
         elif key == arcade.key.RIGHT:
-            self.player_sprite.change_x = MOVEMENT_SPEED
+            self.right_pressed = True
         elif key == arcade.key.SPACE:
             if self.player_sprite.carry:
                 self.rooms[self.current_room].object_list.append(self.player_sprite.carry)
@@ -1177,16 +1242,18 @@ class MyGame(arcade.Window):
     def on_key_release(self, key, modifiers):
         """Called when the user releases a key. """
 
-        if key == arcade.key.UP or key == arcade.key.DOWN:
-            self.player_sprite.change_y = 0
-        elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
-            self.player_sprite.change_x = 0
+        if key == arcade.key.UP:
+            self.up_pressed = False
+        elif key == arcade.key.DOWN:
+            self.down_pressed = False
+        elif key == arcade.key.LEFT:
+            self.left_pressed = False
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = False
 
     def on_update(self, delta_time):
         """ Movement and game logic """
-        if not self.player_sprite.dead:
-            # Call update on all sprites
-            self.physics_engine.update()
+        if not self.player_sprite.dead and not self.player_sprite.winner:
 
             if self.player_sprite.carry:
                 self.player_sprite.carry.center_x = self.player_sprite.center_x + 30
@@ -1195,7 +1262,9 @@ class MyGame(arcade.Window):
             if self.rooms[self.current_room].object_list:
                 object_hit_list = arcade.check_for_collision_with_list(self.player_sprite,
                                                                        self.rooms[self.current_room].object_list)
-                if self.player_sprite.carry:
+
+                if self.player_sprite.carry and self.player_sprite.carry not in \
+                        self.rooms[self.current_room].object_list:
                     self.rooms[self.current_room].object_list.append(self.player_sprite.carry)
 
                 for object in object_hit_list:
@@ -1203,52 +1272,102 @@ class MyGame(arcade.Window):
                     self.rooms[self.current_room].object_list.remove(object)
 
             if self.rooms[self.current_room].dragon_list:
-                for dragon in self.dragon_list:
+                for dragon in self.rooms[self.current_room].dragon_list:
                     if not dragon.dead:
                         dragon.follow_sprite(self.player_sprite)
-                        hit = arcade.check_for_collision(self.player_sprite, dragon)
-                        if hit:
-                            if not dragon.dead and self.player_sprite.carry:
-                                if self.player_sprite.carry.type != "sword":
-                                    self.player_sprite.dead = True
-                                else:
-                                    dragon.dead = True
-
-                            elif not dragon.dead:
+                    hit = arcade.check_for_collision(self.player_sprite, dragon)
+                    if hit:
+                        if not dragon.dead and self.player_sprite.carry:
+                            if self.player_sprite.carry.type != "sword":
                                 self.player_sprite.dead = True
+                                view = GameOverView()
+                                self.window.show_view(view)
+                            else:
+                                dragon.dead = True
+                        elif not dragon.dead:
+                            self.player_sprite.dead = True
+                            view = GameOverView()
+                            self.window.show_view(view)
 
             if self.player_sprite.carry:
                 object_hit_list = arcade.check_for_collision_with_list(self.player_sprite.carry,
                                                                        self.rooms[self.current_room].lock_list)
 
                 if self.player_sprite.carry.type == "trophy" and self.current_room == 5:
-                    print("winner")
+                    self.player_sprite.winner = True
+                    self.player_sprite.center_y = 200
+                    self.player_sprite.center_x = 300
+                    self.player_sprite.carry.center_y = 100
+                    self.player_sprite.carry.center_x = 300
+                    self.player_sprite.carry.scale = .5
 
                 for object in object_hit_list:
-                    if object.color_match == self.player_sprite.carry.color_match and not object.open:
-                        print(object.color_match, self.player_sprite.carry.color_match)
-                        print(object.open)
-                        self.rooms[self.current_room].wall_list[151].remove_from_sprite_lists()
+                    if object.color_match == self.player_sprite.carry.color_match and self.current_room == 4 and not object.open:
                         self.rooms[self.current_room].wall_list[150].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[149].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[148].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[147].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[146].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[145].remove_from_sprite_lists()
-                        self.rooms[self.current_room].wall_list[133].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[132].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[131].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[130].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[129].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[128].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[127].remove_from_sprite_lists()
-                        self.rooms[self.current_room].wall_list[115].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[114].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[113].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[112].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[111].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[110].remove_from_sprite_lists()
                         self.rooms[self.current_room].wall_list[109].remove_from_sprite_lists()
+                        object.open = True
+                        self.rooms[self.current_room].lock_list[0].remove_from_sprite_lists()
+                        self.rooms[self.current_room].object_list.append(self.player_sprite.carry)
+                        self.player_sprite.carry = None
+                    elif object.color_match == self.player_sprite.carry.color_match and self.current_room == 0 and not object.open:
+                        self.rooms[self.current_room].wall_list[145].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[144].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[143].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[142].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[141].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[140].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[127].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[126].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[125].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[124].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[123].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[122].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[109].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[108].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[106].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[105].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[104].remove_from_sprite_lists()
+                        object.open = True
+                        self.rooms[self.current_room].lock_list[0].remove_from_sprite_lists()
+                        self.rooms[self.current_room].object_list.append(self.player_sprite.carry)
+                        self.player_sprite.carry = None
+                    elif object.color_match == self.player_sprite.carry.color_match and self.current_room == 8 and not object.open:
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[107].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[118].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[118].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[118].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[118].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[118].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[118].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[131].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[131].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[131].remove_from_sprite_lists()
+                        self.rooms[self.current_room].wall_list[131].remove_from_sprite_lists()
+
                         object.open = True
                         self.rooms[self.current_room].lock_list[0].remove_from_sprite_lists()
                         self.rooms[self.current_room].object_list.append(self.player_sprite.carry)
@@ -1366,11 +1485,28 @@ class MyGame(arcade.Window):
                                                                  self.rooms[self.current_room].wall_list)
                 self.player_sprite.center_y = 0
 
+        self.player_sprite.change_x = 0
+        self.player_sprite.change_y = 0
+
+        if self.up_pressed and not self.down_pressed:
+            self.player_sprite.change_y = MOVEMENT_SPEED - 2
+        elif self.down_pressed and not self.up_pressed:
+            self.player_sprite.change_y = -MOVEMENT_SPEED + 2
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.change_x = -MOVEMENT_SPEED + 2
+        elif self.right_pressed and not self.left_pressed:
+            self.player_sprite.change_x = MOVEMENT_SPEED - 2
+
+        # Call update on all sprites
+        self.player_list.update()
+        self.physics_engine.update()
+
 
 def main():
     """ Main method """
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    window.setup()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    start_view = InstructionView()
+    window.show_view(start_view)
     arcade.run()
 
 
